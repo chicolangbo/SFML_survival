@@ -12,6 +12,9 @@ struct AxisInfo
 	Axis axis;
 	std::list<int> positivies;
 	std::list<int> negatives;
+
+	float sensi = 3.f; // 이 값이 크면 빠르게 변화
+	float value = 0.f; // -1.0~1.0 사잇값
 };
 
 
@@ -32,8 +35,8 @@ protected:
 	std::map<Axis, AxisInfo> axisInfoMap;
 
 public:
-	void Clear();
-	void Update(const sf::Event& ev);
+	void Update(float dt);
+	void UpdateEvent(const sf::Event& ev);
 
 	// Keyboard
 	bool GetKeyDown(sf::Keyboard::Key key);

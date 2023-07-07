@@ -69,6 +69,41 @@ sf::Vector2f Utils::Clamp(const sf::Vector2f& v, const sf::Vector2f& min, const 
 	return result;
 }
 
+float Utils::Lerp(float a, float b, float t, bool clamping)
+{
+	float v = a + (b - a) * t;
+
+	if (clamping)
+	{
+		if (a > b)
+		{
+			v = Clamp(v, std::min(a,b), std::max(a,b));
+		}
+	}
+	return v;
+}
+
+sf::Vector2f Utils::Lerp(const sf::Vector2f& a, const sf::Vector2f& b, float t, bool clamping)
+{
+	if (clamping)
+	{
+		t = Clamp(t, 0.f, 1.f);
+	}
+
+	return a + Normalize(b-a) * (Distance(a,b) * t);
+}
+
+sf::Color Utils::Lerp(const sf::Color& a, const sf::Color& b, float t, bool clamping)
+{
+	sf::Color v;
+	v.r = Lerp(a.r, b.r, t, clamping);
+	v.g = Lerp(a.g, b.g, t, clamping);
+	v.b = Lerp(a.b, b.b, t, clamping);
+	v.a = Lerp(a.a,  b.a, t, clamping);
+
+	return v;
+}
+
 const sf::Vector2f Utils::Normalize(const sf::Vector2f& vector)
 {
 	float mag = Magnitude(vector);

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "InputMgr.h"
 #include "Framework.h"
+#include "Utils.h"
 
 InputMgr::InputMgr()
 {
@@ -25,13 +26,30 @@ InputMgr::InputMgr()
 	}
 }
 
-void InputMgr::Clear()
+void InputMgr::Update(float dt)
 {
 	downList.clear();
 	upList.clear();
+
+	for (auto& it : axisInfoMap)
+	{
+		auto& axisInfo = it.second; // 등록돼있는 축들마다 순회
+		float raw = GetAxisRaw(axisInfo.axis); // -1.0, 0, 1.0
+		if (raw == 0.f && axisInfo.value != 0.f)
+		{
+			raw = axisInfo.value > 0.f ? -1.f : 1.f;
+		}
+		float diff = axisInfo.sensi * dt;
+		axisInfo.value = Utils::Clamp(axisInfo.value + raw * diff, -1.0f, 1.0f);
+
+		if (abs(axisInfo.value) < diff * 0.5f)
+		{
+			axisInfo.value = 0.f;
+		}
+	}
 }
 
-void InputMgr::Update(const sf::Event& ev)
+void InputMgr::UpdateEvent(const sf::Event& ev)
 {
 	switch (ev.type)
 	{
@@ -108,7 +126,11 @@ bool InputMgr::GetMouseButtonUp(sf::Mouse::Button button)
 
 float InputMgr::GetAxis(Axis axis)
 {
-	return 0.0f;
+	const auto& it = axisInfoMap.find(axis);
+	if (it == axisInfoMap.end())
+		return 0.0f;
+
+	return it->second.value;
 }
 
 float InputMgr::GetAxisRaw(Axis axis)

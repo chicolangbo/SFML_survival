@@ -58,8 +58,17 @@ void Player::Update(float dt)
 	sprite.setRotation(Utils::Angle(look));
 
 	// ÀÌµ¿
-	direction.x = INPUT_MGR.GetAxisRaw(Axis::Horizontal);
-	direction.y = INPUT_MGR.GetAxisRaw(Axis::Vertical);
+	direction.x = INPUT_MGR.GetAxis(Axis::Horizontal);
+	direction.y = INPUT_MGR.GetAxis(Axis::Vertical);
+
+	float magnitude = Utils::Magnitude(direction);
+	if (magnitude > 1.f)
+	{
+		direction /= magnitude;
+	}
+
+	std::cout << direction.x << std::endl;
+
 	position += direction * speed * dt;
 	if (!wallBounds.contains(position))
 	{
@@ -67,7 +76,7 @@ void Player::Update(float dt)
 	}
 	sprite.setPosition(position);
 
-	if (INPUT_MGR.GetMouseButtonDown(sf::Mouse::Left))
+	if (INPUT_MGR.GetMouseButton(sf::Mouse::Left))
 	{
 		Bullet* bullet = poolBullets.Get();
 		bullet->Fire(GetPosition(), look, 1000.f);
