@@ -8,6 +8,7 @@
 #include "VertexArrayGo.h"
 #include "Framework.h"
 #include "Zombie.h"
+#include "SpriteEffect.h"
 
 SceneDev1::SceneDev1()
 	: Scene(SceneId::Dev1), player(nullptr)
@@ -19,6 +20,7 @@ SceneDev1::SceneDev1()
 	resources.push_back(std::make_tuple(ResourceTypes::Texture, "graphics/chaser.png"));
 	resources.push_back(std::make_tuple(ResourceTypes::Texture, "graphics/crawler.png"));
 	resources.push_back(std::make_tuple(ResourceTypes::Texture, "graphics/bullet.png"));
+	resources.push_back(std::make_tuple(ResourceTypes::Texture, "graphics/blood.png"));
 }
 
 SceneDev1::~SceneDev1()
@@ -67,6 +69,16 @@ void SceneDev1::Init()
 		zombie->SetPlayer(player);
 	};
 	zombiePool.Init();
+
+	bloodEffectPool.OnCreate = [this](SpriteEffect* effect) {
+		effect->sortLayer = 0;
+		effect->sortOrder = -1;
+
+		effect->textureId = "graphics/blood.png";
+		effect->SetDuration(3.f);
+		effect->SetPool(&bloodEffectPool);
+		};
+	bloodEffectPool.Init();
 }
 
 void SceneDev1::Release()
@@ -90,7 +102,9 @@ void SceneDev1::Enter()
 
 void SceneDev1::Exit()
 {
-	ClearZombies();
+	ClearObjectPool(zombiePool);
+	ClearObjectPool(bloodEffectPool);
+
 	player->Reset();
 
 	Scene::Exit();
@@ -121,7 +135,7 @@ void SceneDev1::Update(float dt)
 
 	if (INPUT_MGR.GetKeyDown(sf::Keyboard::Num2))
 	{
-		ClearZombies();
+		//ClearZombies();
 	}
 
 	//if (zombiePool.GetUseList().size() == 0)
@@ -204,17 +218,13 @@ void SceneDev1::SpawnZombies(int count, sf::Vector2f center, float radius)
 	}
 }
 
-void SceneDev1::ClearZombies()
-{
-	for (auto zombie : zombiePool.GetUseList())
-	{
-		RemoveGo(zombie);
-	}
-	zombiePool.Clear();
-}
-
 void SceneDev1::OnDieZombie(Zombie* zombie)
 {
+	// ÇÍÀÚ±¹
+	SpriteEffect* blood = bloodEffectPool.Get();
+	blood->SetPosition(zombie->GetPosition());
+	AddGo(blood);
+
 	RemoveGo(zombie);
 	zombiePool.Return(zombie);
 }
